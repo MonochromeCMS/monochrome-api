@@ -1,0 +1,52 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+# Testing
+httpx = "*"
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+# Requirements
+aiofiles = "*"
+aiohttp = "*"
+alembic = "*"
+asyncpg = "*"
+deta = {extras = ["async"], version = "==1.1.0a2"}
+fastapi = "*"
+fastapi_camelcase = "*"
+gunicorn = "*"
+orjson = "*"
+passlib = {extras = ["bcrypt"], version = "*"}
+patool = "*"
+pillow = ">=8.3.2"
+prometheus-fastapi-instrumentator = "*"
+pydantic = {extras = ["email"], version = "*"}
+python-jose = {extras = ["cryptography"], version = "*"}
+python-multipart = "*"
+pyunpack = "*"
+rich = "*"
+sqlalchemy = "*"
+slowapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+
+[dev-packages]
+# Linting/Formatting (needed in the image for CI)
+black = "*"
+flake8 = "*"
+flake8-isort = "*"
+flake8-black = "*"
+isort = "*"
+# Other
+icecream = "*"
+ipython = "*"
+pyupgrade = "*"
+safety = "*"
+
+[requires]
+python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true

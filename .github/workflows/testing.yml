@@ -1,0 +1,31 @@
+name: Testing
+
+on: [push, workflow_dispatch]
+
+jobs:
+  tests-deta:
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: "true"
+      - name: Create .env
+        run: cp .env.example .env
+      - name: Add testing vars
+        run: |
+          echo MEDIA_BACKEND=DETA >> .env
+          echo DB_BACKEND=DETA >> .env
+          echo DETA_PROJECT_KEY=${{ secrets.DETA_TEST_KEY }} >> .env
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Building the image
+        uses: docker/build-push-action@v2
+        with:
+          tags: ${{ secrets.IMAGE_TAG }}:latest
+          cache-from: type=registry,ref=${{ secrets.IMAGE_TAG }}:latest
+      - name: Linting
+        run: docker run ${{ secrets.IMAGE_TAG }} lint

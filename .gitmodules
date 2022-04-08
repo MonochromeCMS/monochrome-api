@@ -1,0 +1,3 @@
+[submodule "fastapi-permissions"]
+	path = fastapi-permissions
+	url = https://github.com/MonochromeCMS/fastapi-permissions.git

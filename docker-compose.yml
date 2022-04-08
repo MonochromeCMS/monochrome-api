@@ -1,0 +1,25 @@
+version: "3.4"
+
+services:
+  db: # Remove if deta is used
+    hostname : db
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_DB: ${PG_DB}
+    ports:
+      - 54320:5432
+  
+  api:
+    image: monochrome-api
+    build: .
+    env_file:
+      - ".env"
+    environment:
+      PORT: "3000"
+      PG_HOST: "db:5432"
+    ports:
+      - 3000:3000
+    volumes:
+      - "./media:/media"
