@@ -7,7 +7,7 @@ on:
 env:
   REGISTRY: ghcr.io
   BASE_IMAGE: 'python:3.9-slim'
-  BASE_IMAGE_PLATFORMS: 'linux/amd64,linux/arm64/v8'
+  BASE_IMAGE_PLATFORMS: 'linux/amd64,linux/arm64/v8,linux/arm/v7'
 
 jobs:
   build-and-push-image:

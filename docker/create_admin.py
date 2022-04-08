@@ -41,7 +41,7 @@ async def pg_main():
     await conn.close()
 
 
-def deta_main():
+async def deta_main():
     PROJECT_KEY = getenv("DETA_PROJECT_KEY")
 
     if not PROJECT_KEY:
@@ -59,7 +59,7 @@ def deta_main():
     hashed_password = bcrypt.hash(PASSWORD)
 
     deta = Deta(PROJECT_KEY)
-    db = deta.Base("users")
+    db = deta.AsyncBase("users")
 
     user = {
         "username": USERNAME,
@@ -71,8 +71,8 @@ def deta_main():
         "role": "admin",
     }
 
-    db.put(user)
-    db.close()
+    await db.put(user)
+    await db.close()
 
 
 if __name__ == "__main__":
@@ -81,4 +81,4 @@ if __name__ == "__main__":
     if DB_BACKEND == "POSTGRES":
         asyncio.run(pg_main())
     elif DB_BACKEND == "DETA":
-        deta_main()
+        asyncio.run(deta_main())

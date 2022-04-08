@@ -16,7 +16,7 @@ more info in [providers](#providers).
 Once you have a database you can create an admin user:
 ```shell
 # POSTGRES DATABASE
-docker run                                    \
+docker run -ti                                \
   -e DB_BACKEND=POSTGRES                      \
   -e PG_USER=postgres                         \
   -e PG_PASS=postgres                         \
@@ -26,7 +26,7 @@ docker run                                    \
   create_admin
 
 # DETA DATABASE
-docker run                                    \
+docker run -ti                                \
   -e DB_BACKEND=DETA                          \
   -e DETA_PROJECT_KEY=...                     \
   ghcr.io/monochromecms/monochrome-api:latest \
@@ -35,6 +35,7 @@ docker run                                    \
 
 Once done, the image can be launched with the required [env. vars](#environment-variables):
 ```shell
+# Example using deta
 docker run -p 3000:3000                                \
   -e DB_BACKEND=DETA                                   \
   -e MEDIA_BACKEND=DETA                                \
