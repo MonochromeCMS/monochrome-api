@@ -7,8 +7,6 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
 from fastapi_permissions import has_permission, permission_exception
 
-from db_adapters.postgres.session import db_session
-
 from ..config import get_settings
 from ..db import db, models
 from ..exceptions import BadRequestHTTPException, NotFoundHTTPException

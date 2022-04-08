@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from math import inf
-from typing import Callable, ClassVar, Union
+from typing import ClassVar
 from uuid import UUID, uuid4
 
 from aiohttp import ClientError
@@ -60,10 +60,9 @@ class Base(BaseModel):
         Update fields on this instance, equivalent to changing the fields manually and saving.
         The session comes from `db_session` on `session.py`
         """
-        async with async_client(db_session, self.db_name) as db:
-            new_dict = {**self.dict(), **kwargs}
-            new_instance = self.__class__(**new_dict)
-            await new_instance.save(db_session)
+        new_dict = {**self.dict(), **kwargs}
+        new_instance = self.__class__(**new_dict)
+        await new_instance.save(db_session)
 
         self.__dict__.update(new_instance.__dict__)
 

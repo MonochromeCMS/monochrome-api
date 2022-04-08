@@ -28,4 +28,4 @@ jobs:
           tags: ${{ secrets.IMAGE_TAG }}:latest
           cache-from: type=registry,ref=${{ secrets.IMAGE_TAG }}:latest
       - name: Linting
-        run: docker run ${{ secrets.IMAGE_TAG }} lint
+        run: docker run -v "`pwd`:/mnt" -w "/mnt" ${{ secrets.IMAGE_TAG }} lint
