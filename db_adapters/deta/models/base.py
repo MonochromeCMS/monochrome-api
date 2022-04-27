@@ -3,7 +3,6 @@ from math import inf
 from typing import ClassVar
 from uuid import UUID, uuid4
 
-from aiohttp import ClientError
 from deta import Deta
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -20,10 +19,10 @@ NotFoundException = HTTPException(404, "Resource not found")
 
 @asynccontextmanager
 async def async_client(deta: Deta, db_name: str):
-    client = deta.AsyncBase(db_name)
     try:
+        client = deta.AsyncBase(db_name)
         yield client
-    except ClientError:
+    except:
         raise ErrorException
     finally:
         await client.close()
