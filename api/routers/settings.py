@@ -1,8 +1,8 @@
-from ..utils import logger
 from fastapi import APIRouter, Depends
 
 from ..db import db, models
 from ..schemas.settings import SettingsSchema
+from ..utils import logger
 from .auth import Permission
 from .responses import settings as responses
 

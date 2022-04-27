@@ -12,9 +12,9 @@ from ..exceptions import BadRequestHTTPException, NotFoundHTTPException
 from ..media import media
 from ..schemas.chapter import ChapterResponse
 from ..schemas.manga import MangaResponse, MangaSchema, MangaSearchResponse
+from ..utils import logger
 from .auth import Permission, get_active_principals, get_connected_user
 from .responses import manga as responses
-from ..utils import logger
 
 global_settings = get_settings()
 Chapter = models.chapter.Chapter

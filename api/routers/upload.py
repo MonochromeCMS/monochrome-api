@@ -13,10 +13,10 @@ from ..exceptions import BadRequestHTTPException, NotFoundHTTPException
 from ..media import media
 from ..schemas.chapter import ChapterResponse
 from ..schemas.upload import CommitUploadSession, UploadedBlobResponse, UploadSessionResponse, UploadSessionSchema
+from ..utils import logger
 from .auth import Permission, get_active_principals, is_connected
 from .responses import upload as responses
 from .utils import upload as utils
-from ..utils import logger
 
 global_settings = get_settings()
 UploadSession = models.upload.UploadSession

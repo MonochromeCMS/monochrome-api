@@ -13,8 +13,8 @@ from ..db import db, models
 from ..exceptions import AuthFailedHTTPException
 from ..limiter import limiter
 from ..schemas.user import RefreshToken, TokenContent, TokenResponse
-from .responses import auth as responses
 from ..utils import logger
+from .responses import auth as responses
 
 global_settings = get_settings()
 User = models.user.User

@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, status
 from ..db import db, models
 from ..exceptions import BadRequestHTTPException, NotFoundHTTPException
 from ..schemas.comment import CommentEditSchema, CommentResponse, CommentSchema
+from ..utils import logger
 from .auth import Permission, get_connected_user
 from .responses import comment as responses
-from ..utils import logger
 
 Comment = models.comment.Comment
 User = models.user.User

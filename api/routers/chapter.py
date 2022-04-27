@@ -10,9 +10,9 @@ from ..exceptions import NotFoundHTTPException
 from ..media import media
 from ..schemas.chapter import ChapterResponse, ChapterSchema, DetailedChapterResponse, LatestChaptersResponse
 from ..schemas.comment import ChapterCommentsResponse
+from ..utils import logger
 from .auth import Permission, get_active_principals
 from .responses import chapter as responses
-from ..utils import logger
 
 global_settings = get_settings()
 Chapter = models.chapter.Chapter
