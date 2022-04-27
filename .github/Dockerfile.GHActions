@@ -32,13 +32,13 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # INSTALL REQUIREMENTS
-COPY Pipfile* ./
+COPY requirements.txt .
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc libpq-dev libc-dev && \
+    apt-get install -y --no-install-recommends gcc cargo libffi-dev libpq-dev libc-dev && \
     rm -rf /var/lib/apt/lists/* && \
-    pip install --no-cache-dir -U setuptools wheel pipenv && \
-    pipenv install --system && \
-    apt-get remove -y gcc libpq-dev libc-dev && \
+    pip install --no-cache-dir -U setuptools wheel && \
+    pip install -r requirements.txt && \
+    apt-get remove -y gcc cargo libffi-dev libpq-dev libc-dev && \
     apt-get autoremove -y
 
 
