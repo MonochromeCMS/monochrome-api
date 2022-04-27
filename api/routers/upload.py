@@ -16,6 +16,7 @@ from ..schemas.upload import CommitUploadSession, UploadedBlobResponse, UploadSe
 from .auth import Permission, get_active_principals, is_connected
 from .responses import upload as responses
 from .utils import upload as utils
+from ..utils import logger
 
 global_settings = get_settings()
 UploadSession = models.upload.UploadSession
@@ -64,10 +65,14 @@ async def begin_upload_session(
     session = UploadSession(**payload.dict(), owner_id=user.id)
     await session.save(db_session)
 
+    logger.debug(f"Upload session {session.id} created")
+
     utils.TempDir(str(session.id)).setup()
 
     if chapter:
+        logger.debug(f"Upload session {session.id}: Edit mode")
         blobs = await utils.uploaded_blob_list(db_session, session.id, chapter.length)
+        logger.debug(f"Upload session {session.id}: blobs = {blobs}")
         utils.copy_chapter_to_session(chapter, blobs)
 
     return await UploadSession.find_detailed(db_session, session.id)
@@ -75,6 +80,7 @@ async def begin_upload_session(
 
 @router.get("/{session_id}", response_model=UploadSessionResponse, responses=responses.get_responses)
 async def get_upload_session(upload_session=Permission("view", _get_upload_session_blobs)):
+    logger.debug(f"Upload session {upload_session.id} requested")
     return upload_session
 
 

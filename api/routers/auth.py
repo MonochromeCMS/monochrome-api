@@ -14,6 +14,7 @@ from ..exceptions import AuthFailedHTTPException
 from ..limiter import limiter
 from ..schemas.user import RefreshToken, TokenContent, TokenResponse
 from .responses import auth as responses
+from ..utils import logger
 
 global_settings = get_settings()
 User = models.user.User
@@ -138,6 +139,8 @@ async def login_for_access_token(
     user = await authenticate_user(db_session, form_data.username, form_data.password)
     if not user:
         raise AuthFailedHTTPException("Wrong username/password")
+        logger.debug("Failed login")
+    logger.debug(f"{user.username} logged in")
     return token_response(user)
 
 
@@ -145,4 +148,5 @@ async def login_for_access_token(
 @limiter.limit("1/minute")
 async def refresh_access_token(request: Request, body: RefreshToken, db_session=Depends(db.db_session)):
     user = await validate_refresh_token(body.token, db_session)
+    logger.debug(f"{user.username} refreshed its tokens")
     return token_response(user)

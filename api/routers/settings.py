@@ -1,3 +1,4 @@
+from ..utils import logger
 from fastapi import APIRouter, Depends
 
 from ..db import db, models
@@ -25,5 +26,8 @@ async def edit_site_settings(
     settings: Settings = Permission("edit", _get_settings),
     db_session=Depends(db.db_session),
 ):
+    logger.debug("Settings updated")
+    logger.debug(f"Old settings: {settings}")
+    logger.debug(f"New settings: {new_settings}")
     await settings.set(db_session, **new_settings.dict())
     return settings

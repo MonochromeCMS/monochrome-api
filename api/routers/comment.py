@@ -7,6 +7,7 @@ from ..exceptions import BadRequestHTTPException, NotFoundHTTPException
 from ..schemas.comment import CommentEditSchema, CommentResponse, CommentSchema
 from .auth import Permission, get_connected_user
 from .responses import comment as responses
+from ..utils import logger
 
 Comment = models.comment.Comment
 User = models.user.User
@@ -37,17 +38,20 @@ async def create_comment(
 
     comment = Comment(**payload.dict(), author_id=user.id)
     await comment.save(db_session)
+    logger.debug(f"Comment created on {payload.chapter_id}")
 
     return comment
 
 
 @router.get("/{comment_id}", response_model=CommentResponse, responses=responses.get_responses)
 async def get_comment(comment: Comment = Permission("view", _get_comment)):
+    logger.debug(f"Comment {comment.id} requested")
     return comment
 
 
 @router.delete("/{comment_id}", responses=responses.delete_responses)
 async def delete_comment(comment: Comment = Permission("edit", _get_comment), db_session=Depends(db.db_session)):
+    logger.debug(f"Comment {comment.id} deleted")
     return await comment.delete(db_session)
 
 
@@ -57,5 +61,8 @@ async def update_comment(
     comment: Comment = Permission("edit", _get_comment),
     db_session=Depends(db.db_session),
 ):
+    logger.debug(f"Comment {comment.id} updated")
+    logger.debug(f"Old comment: {comment}")
+    logger.debug(f"New comment: {payload}")
     await comment.update(db_session, **payload.dict())
     return comment

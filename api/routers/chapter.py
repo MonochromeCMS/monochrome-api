@@ -12,6 +12,7 @@ from ..schemas.chapter import ChapterResponse, ChapterSchema, DetailedChapterRes
 from ..schemas.comment import ChapterCommentsResponse
 from .auth import Permission, get_active_principals
 from .responses import chapter as responses
+from ..utils import logger
 
 global_settings = get_settings()
 Chapter = models.chapter.Chapter
@@ -35,6 +36,7 @@ async def get_latest_chapters(
     db_session=Depends(db.db_session),
 ):
     count, page = await Chapter.latest(db_session, limit, offset)
+    logger.debug(f"Latest chapter page of length {limit} requested")
 
     return {
         "offset": offset,
@@ -46,13 +48,14 @@ async def get_latest_chapters(
 
 @router.get("/{chapter_id}", response_model=DetailedChapterResponse, responses=responses.get_responses)
 async def get_chapter(chapter: Chapter = Permission("view", _get_detailed_chapter)):
+    logger.debug(f"Chapter {chapter.id} requested")
     return chapter
 
 
 @router.delete("/{chapter_id}", responses=responses.delete_responses)
 async def delete_chapter(chapter: Chapter = Permission("edit", _get_chapter), db_session=Depends(db.db_session)):
     media.media.rmtree(f"{chapter.manga_id}/{chapter.id}")
-
+    logger.debug(f"Chapter {chapter.id} deleted")
     return await chapter.delete(db_session)
 
 
@@ -62,6 +65,9 @@ async def update_chapter(
     chapter: Chapter = Permission("edit", _get_chapter),
     db_session=Depends(db.db_session),
 ):
+    logger.debug(f"Chapter {chapter.id} updated")
+    logger.debug(f"Old chapter: {chapter}")
+    logger.debug(f"New chapter: {payload}")
     await chapter.update(db_session, **payload.dict())
     return chapter
 
@@ -78,6 +84,7 @@ async def get_chapter_comments(
 ):
     if await has_permission(user_principals, "view", Comment.__class_acl__()):
         count, page = await Comment.from_chapter(db_session, chapter.id, limit, offset)
+        logger.debug(f"Comments page of length {limit} requested from chapter {chapter.id}")
         return {
             "offset": offset,
             "limit": limit,
@@ -85,4 +92,5 @@ async def get_chapter_comments(
             "total": count,
         }
     else:
+        logger.info("Comments requested but not allowed to read them")
         raise permission_exception

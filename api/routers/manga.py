@@ -14,6 +14,7 @@ from ..schemas.chapter import ChapterResponse
 from ..schemas.manga import MangaResponse, MangaSchema, MangaSearchResponse
 from .auth import Permission, get_active_principals, get_connected_user
 from .responses import manga as responses
+from ..utils import logger
 
 global_settings = get_settings()
 Chapter = models.chapter.Chapter
@@ -41,7 +42,7 @@ async def create_manga(
 ):
     manga = Manga(**payload.dict(), owner_id=user.id)
     await manga.save(db_session)
-    print(manga.id, manga.title, manga.create_time)
+    logger.debug(f"Manga {manga.id} created")
     return manga
 
 
@@ -53,6 +54,7 @@ async def search_manga(
     db_session=Depends(db.db_session),
 ):
     count, page = await Manga.search(db_session, title, limit, offset)
+    logger.debug(f"Manga page of length {limit} requested with {title} filter, {count} found")
 
     return {
         "offset": offset,
@@ -64,6 +66,7 @@ async def search_manga(
 
 @router.get("/{manga_id}", response_model=MangaResponse, responses=responses.get_responses)
 async def get_manga(manga: Manga = Permission("view", _get_manga)):
+    logger.debug(f"Manga {manga.id} requested")
     return manga
 
 
