@@ -18,7 +18,7 @@ app = FastAPI(
     title="Monochrome API",
     version="2.0.0",
     default_response_class=ORJSONResponse,
-    root_path=global_settings.root_path,
+    root_path=global_settings.normalized_root_path,
 )
 
 # TODO add routers

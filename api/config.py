@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     root_path: str = "/"
 
     @property
+    def normalized_root_path(self):
+        return self.root_path[:-1] if self.root_path.endswith("/") else self.root_path
+
+    @property
     def cors(self):
         return self.cors_origins.split(",")
 
