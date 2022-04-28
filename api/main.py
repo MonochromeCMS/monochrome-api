@@ -1,6 +1,8 @@
+from os import getenv
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import ORJSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, ORJSONResponse, RedirectResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -14,10 +16,15 @@ from .utils import logger
 
 global_settings = get_settings()
 
+if getenv("DETA_RUNTIME"):
+    json_response = JSONResponse
+else:
+    json_response = ORJSONResponse
+
 app = FastAPI(
     title="Monochrome API",
     version="2.0.0",
-    default_response_class=ORJSONResponse,
+    default_response_class=json_response,
     root_path=global_settings.normalized_root_path,
 )
 
