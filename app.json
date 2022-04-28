@@ -56,6 +56,9 @@
   "image": "heroku/python",
   "buildpacks": [
     {
+      "url": "https://github.com/dmathieu/heroku-buildpack-submodules"
+    },
+    {
       "url": "https://github.com/opendoor-labs/heroku-buildpack-p7zip.git"
     },
     {

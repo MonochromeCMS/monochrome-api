@@ -3,6 +3,7 @@ import os
 from sys import path
 
 path.append(".")
+path.append("./fastapi-permissions")
 if "DB_BACKEND" not in os.environ:
     os.environ["DB_BACKEND"] = "DETA"
 
