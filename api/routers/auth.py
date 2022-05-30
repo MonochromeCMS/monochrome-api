@@ -74,6 +74,11 @@ async def validate_refresh_token(token: str, db_session):
 
     id = decoded_token.get("sub")
     user: Optional[User] = await User.find(db_session, UUID(id), exception=None)
+    iat = decoded_token.get("iat")
+
+    if iat < user.update_time.timestamp():
+        return None
+
     return user
 
 
@@ -103,6 +108,11 @@ async def get_connected_user(db_session=Depends(db.db_session), token: str = Dep
 
     id = decoded_token.get("sub")
     user: Optional[User] = await User.find(db_session, UUID(id), exception=None)
+    iat = decoded_token.get("iat")
+
+    if iat < user.update_time.timestamp():
+        return None
+
     return user
 
 
@@ -138,8 +148,8 @@ async def login_for_access_token(
     """Provides an OAuth2 token if the credentials are right."""
     user = await authenticate_user(db_session, form_data.username, form_data.password)
     if not user:
-        raise AuthFailedHTTPException("Wrong username/password")
         logger.debug("Failed login")
+        raise AuthFailedHTTPException("Wrong username/password")
     logger.debug(f"{user.username} logged in")
     return token_response(user)
 
@@ -150,3 +160,10 @@ async def refresh_access_token(request: Request, body: RefreshToken, db_session=
     user = await validate_refresh_token(body.token, db_session)
     logger.debug(f"{user.username} refreshed its tokens")
     return token_response(user)
+
+
+@router.post("/logout_everywhere", responses=responses.logout_everywhere_responses)
+async def logout_everywhere(user: User = Depends(is_connected), db_session=Depends(db.db_session)):
+    await user.save(db_session)
+    logger.debug(f"{user.username} logged out everywhere")
+    return "OK"

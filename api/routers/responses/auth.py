@@ -19,3 +19,15 @@ token_responses = {
         **AuthFailedHTTPException.open_api("Wrong username/password"),
     },
 }
+
+logout_everywhere_responses = {
+    **auth_responses,
+    200: {
+        "description": "User was logged out from every device",
+        "content": {
+            "application/json": {
+                "example": "OK",
+            },
+        },
+    },
+}

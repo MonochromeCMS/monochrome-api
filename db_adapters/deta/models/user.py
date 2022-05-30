@@ -1,10 +1,11 @@
+from datetime import datetime
 from enum import Enum
 from typing import ClassVar, Optional, Union
 from uuid import UUID
 
 from deta import Deta
 from fastapi_permissions import Allow, Everyone
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from .base import Base
 
@@ -20,6 +21,7 @@ class User(Base):
     username: str
     email: Optional[EmailStr]
     hashed_password: str
+    update_time: datetime = Field(default_factory=datetime.now)
 
     db_name: ClassVar = "users"
 
@@ -43,6 +45,13 @@ class User(Base):
             (Allow, ["role:admin"], "view"),
             (Allow, ["role:admin"], "edit"),
         )
+
+    async def save(self, db_session: Deta):
+        """
+        Overrides the default save method to update the update_time.
+        """
+        self.update_time = datetime.now()
+        await super().save(db_session)
 
     async def delete(self, db_session: Deta):
         from .comment import Comment

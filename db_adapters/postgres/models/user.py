@@ -1,10 +1,11 @@
 import enum
 import uuid
+from datetime import datetime
 from typing import Optional, Union
 
 from fastapi_permissions import Allow, Everyone
 from pydantic import BaseModel
-from sqlalchemy import Column, Enum, String, and_, select
+from sqlalchemy import Column, DateTime, Enum, String, and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship
 
@@ -22,6 +23,7 @@ class User(Base):
     username = Column(String(15), nullable=False, unique=True)
     email = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
+    update_time = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Delete all the related comments with the user.
     comments = relationship("Comment", back_populates="author", cascade="all, delete", passive_deletes=True)
@@ -46,6 +48,13 @@ class User(Base):
             (Allow, ["role:admin"], "view"),
             (Allow, ["role:admin"], "edit"),
         )
+
+    async def save(self, db_session: AsyncSession):
+        """
+        Overrides the default save method to update the update_time.
+        """
+        self.update_time = datetime.now()
+        await super().save(db_session)
 
     @classmethod
     async def from_username(cls, db_session: AsyncSession, username: str, ignore_user: uuid.UUID = None):
