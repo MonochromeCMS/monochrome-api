@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   db: # Remove if deta is used
-    hostname : db
+    hostname: db
     image: postgres:13-alpine
     environment:
       POSTGRES_USER: ${PG_USER}
@@ -10,7 +10,7 @@ services:
       POSTGRES_DB: ${PG_DB}
     ports:
       - 54320:5432
-  
+
   api:
     image: monochrome-api
     build: .
@@ -21,5 +21,9 @@ services:
       PG_HOST: "db:5432"
     ports:
       - 3000:3000
+    command: "uvicorn --log-config logging.ini api.main:app --reload --host 0.0.0.0 --port 3000"
     volumes:
       - "./media:/media"
+      - "./api:/app/api"
+      - "./media_adapters:/app/media_adapters"
+      - "./db_adapters:/app/db_adapters"
