@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 120
-extend-exclude = "alembic"
+extend-exclude = "alembic|fastapi-permissions"
 
 [tool.isort]
 profile = "black"
@@ -9,4 +9,4 @@ skip_gitignore = true
 line_length = 120
 use_parentheses = true
 include_trailing_comma = true
-extend_skip = ["alembic"]
+extend_skip = ["alembic", "fastapi-permissions"]
