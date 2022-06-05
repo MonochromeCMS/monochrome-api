@@ -23,7 +23,7 @@ else:
 
 app = FastAPI(
     title="Monochrome API",
-    version="2.0.0",
+    version="2.0.1",
     default_response_class=json_response,
     root_path=global_settings.normalized_root_path,
 )
