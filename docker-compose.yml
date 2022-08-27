@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: ${PG_DB}
     ports:
       - 127.0.0.1:54320:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_DB}"]
       interval: 10s
@@ -35,3 +37,6 @@ services:
     depends_on:
       db: # Remove if deta is used
         condition: service_healthy
+
+volumes:
+  db-data:
