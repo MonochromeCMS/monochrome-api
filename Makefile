@@ -53,8 +53,8 @@ create_admin: ## Create a new admin user
 lock:	## Refresh pipfile.lock
 	@$(DOCKER_DEV_BARE) pipenv lock --pre
 
-	$(DOCKER_DEV_BARE) bash -c "pipenv lock --pre -r > requirements.tmp.txt"
-	tail +9 requirements.tmp.txt > requirements.txt
+	$(DOCKER_DEV_BARE) bash -c "pipenv requirements > requirements.tmp.txt"
+	tail -n +2 requirements.tmp.txt > requirements.txt
 	rm -f requirements.tmp.txt
 	sed -i "s/;.*$$//g" requirements.txt   
 
