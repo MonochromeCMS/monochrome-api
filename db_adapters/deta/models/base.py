@@ -22,7 +22,7 @@ async def async_client(deta: Deta, db_name: str):
     try:
         client = deta.AsyncBase(db_name)
         yield client
-    except:
+    except Exception:
         raise ErrorException
     finally:
         await client.close()
