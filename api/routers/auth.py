@@ -1,27 +1,30 @@
-from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi_jwt_auth import AuthJWT
 from fastapi_permissions import Authenticated, Everyone, configure_permissions
-from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from ..config import get_settings
 from ..db import db, models
 from ..exceptions import AuthFailedHTTPException
 from ..limiter import limiter
-from ..schemas.user import RefreshToken, TokenContent, TokenResponse
+from ..schemas.user import TokenResponse
 from ..utils import logger
 from .responses import auth as responses
 
 global_settings = get_settings()
 User = models.user.User
 
-router = APIRouter(tags=["Auth"], prefix="/auth")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token", auto_error=False)
+@AuthJWT.load_config
+def get_jwt_config():
+    return global_settings.authjwt
+
+
+router = APIRouter(tags=["Auth"], prefix="/auth")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -44,50 +47,14 @@ async def authenticate_user(db_session, username: str, password: str):
         return None
 
 
-def create_token(sub: UUID, typ: str, expires_delta: Optional[timedelta] = None):
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode = TokenContent(sub=str(sub), exp=expire, iat=datetime.utcnow(), typ=typ).dict()
-    encoded_jwt = jwt.encode(to_encode, global_settings.jwt_secret_key, algorithm=global_settings.jwt_algorithm)
-    return encoded_jwt
+def token_response(user_id: UUID, Authorize: AuthJWT, refresh=True):
+    access_token = Authorize.create_access_token(subject=str(user_id), fresh=refresh)
+    refresh_token = Authorize.create_refresh_token(subject=str(user_id)) if refresh else None
 
+    Authorize.set_access_cookies(access_token)
+    if refresh:
+        Authorize.set_refresh_cookies(refresh_token)
 
-def decode_token(token: str):
-    try:
-        payload = jwt.decode(token, global_settings.jwt_secret_key, algorithms=[global_settings.jwt_algorithm])
-        id: str = payload.get("sub")
-        if id is not None:
-            return payload
-        else:
-            return None
-    except JWTError:
-        return None
-
-
-async def validate_refresh_token(token: str, db_session):
-    decoded_token = decode_token(token)
-
-    if not decoded_token or decoded_token.get("typ") != "refresh":
-        raise AuthFailedHTTPException("Invalid token")
-
-    id = decoded_token.get("sub")
-    user: Optional[User] = await User.find(db_session, UUID(id), exception=None)
-    iat = decoded_token.get("iat")
-
-    if iat < user.update_time.timestamp():
-        return None
-
-    return user
-
-
-def token_response(user: User):
-    access_token_expires = timedelta(minutes=global_settings.jwt_access_token_expire_minutes)
-    refresh_token_expires = timedelta(days=15)
-
-    access_token = create_token(sub=user.id, typ="session", expires_delta=access_token_expires)
-    refresh_token = create_token(sub=user.id, typ="refresh", expires_delta=refresh_token_expires)
     return {
         "token_type": "bearer",
         "access_token": access_token,
@@ -98,29 +65,29 @@ def token_response(user: User):
 # DEPENDENCIES
 
 
-async def get_connected_user(db_session=Depends(db.db_session), token: str = Depends(oauth2_scheme)):
-    if not token:
-        return None
-    decoded_token = decode_token(token)
+async def get_connected_user(db_session=Depends(db.db_session), Authorize: AuthJWT = Depends()):
+    Authorize.jwt_optional()
+    subject = Authorize.get_jwt_subject()
+    jwt = Authorize.get_raw_jwt()
 
-    if not decoded_token or decoded_token.get("typ") != "session":
-        return None
+    if subject:
+        user: Optional[User] = await User.find(db_session, UUID(subject), exception=None)
+    else:
+        user = None
 
-    id = decoded_token.get("sub")
-    user: Optional[User] = await User.find(db_session, UUID(id), exception=None)
-    iat = decoded_token.get("iat")
+    if user:
+        iat = jwt.get("iat")
 
-    if iat < user.update_time.timestamp():
-        return None
+        if iat < user.update_time.timestamp():
+            return None
 
     return user
 
 
-async def is_connected(user: User = Depends(get_connected_user)):
-    if user:
-        return user
-    else:
-        raise AuthFailedHTTPException()
+async def is_connected(user: User = Depends(get_connected_user), Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+
+    return user
 
 
 async def get_active_principals(user: User = Depends(get_connected_user)):
@@ -140,8 +107,9 @@ Permission = configure_permissions(get_active_principals)
 
 @router.post("/token", response_model=TokenResponse, responses=responses.token_responses)
 @limiter.limit("10/minute")
-async def login_for_access_token(
+async def login(
     request: Request,
+    Authorize: AuthJWT = Depends(),
     form_data: OAuth2PasswordRequestForm = Depends(),
     db_session=Depends(db.db_session),
 ):
@@ -151,19 +119,37 @@ async def login_for_access_token(
         logger.debug("Failed login")
         raise AuthFailedHTTPException("Wrong username/password")
     logger.debug(f"{user.username} logged in")
-    return token_response(user)
+    return token_response(user.id, Authorize)
 
 
 @router.post("/refresh", response_model=TokenResponse, responses=responses.token_responses)
 @limiter.limit("1/minute")
-async def refresh_access_token(request: Request, body: RefreshToken, db_session=Depends(db.db_session)):
-    user = await validate_refresh_token(body.token, db_session)
+async def refresh_access_token(request: Request, Authorize: AuthJWT = Depends(), db_session=Depends(db.db_session)):
+    # TODO: Frontend send refresh via headers, only get access token back
+    Authorize.jwt_refresh_token_required()
+
+    subject = Authorize.get_jwt_subject()
+    user: Optional[User] = await User.find(db_session, UUID(subject), exception=None)
+    if not user:
+        raise AuthFailedHTTPException("User not found")
+
     logger.debug(f"{user.username} refreshed its tokens")
-    return token_response(user)
+    return token_response(user.id, Authorize, refresh=False)
 
 
-@router.post("/logout_everywhere", responses=responses.logout_everywhere_responses)
-async def logout_everywhere(user: User = Depends(is_connected), db_session=Depends(db.db_session)):
+@router.delete("/logout")
+def logout(Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+
+    Authorize.unset_jwt_cookies()
+    return {"msg": "Successful logout"}
+
+
+@router.delete("/logout_everywhere", responses=responses.logout_everywhere_responses)
+async def logout_everywhere(
+    user: User = Depends(is_connected), db_session=Depends(db.db_session), Authorize: AuthJWT = Depends()
+):
     await user.save(db_session)
+    Authorize.unset_jwt_cookies()
     logger.debug(f"{user.username} logged out everywhere")
-    return "OK"
+    return {"msg": "Successful logout everywhere"}

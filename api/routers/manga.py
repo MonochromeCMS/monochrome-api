@@ -13,7 +13,7 @@ from ..media import media
 from ..schemas.chapter import ChapterResponse
 from ..schemas.manga import MangaResponse, MangaSchema, MangaSearchResponse
 from ..utils import logger
-from .auth import Permission, get_active_principals, get_connected_user
+from .auth import Permission, get_active_principals, is_connected
 from .responses import manga as responses
 
 global_settings = get_settings()
@@ -37,7 +37,7 @@ async def _get_manga(manga_id: UUID, db_session=Depends(db.db_session)):
 )
 async def create_manga(
     payload: MangaSchema,
-    user: User = Depends(get_connected_user),
+    user: User = Depends(is_connected),
     db_session=Depends(db.db_session),
 ):
     manga = Manga(**payload.dict(), owner_id=user.id)

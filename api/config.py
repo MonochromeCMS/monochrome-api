@@ -1,3 +1,4 @@
+from datetime import timedelta
 from enum import Enum
 from functools import lru_cache
 
@@ -19,11 +20,6 @@ class DatabaseBackends(str, Enum):
 class Settings(BaseSettings):
     media_backend: MediaBackends
     db_backend: DatabaseBackends
-    # TODO move to adapter settings
-    # deta_project_key: str
-    # pg_user: str
-    # pg_pass: str
-    # pg_host: str
     # Comma-separated trusted origins list.
     cors_origins: str = ""
     # JWT Settings
@@ -37,6 +33,18 @@ class Settings(BaseSettings):
     max_page_limit: int = Field(50, gt=0)
     allow_registration: bool = False
     root_path: str = "/"
+
+    @property
+    def authjwt(self):
+        return {
+            "authjwt_token_location": {"headers", "cookies"},
+            "authjwt_secret_key": self.jwt_secret_key,
+            "authjwt_algorithm": "HS256",
+            "authjwt_access_token_expires": timedelta(minutes=self.jwt_access_token_expire_minutes),
+            "authjwt_refresh_token_expires": timedelta(days=15),
+            "authjwt_cookie_csrf_protect": False,
+            # "authjwt_cookie_samesite": "lax",
+        }.items()
 
     @property
     def normalized_root_path(self):

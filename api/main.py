@@ -3,6 +3,7 @@ from os import getenv
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, ORJSONResponse, RedirectResponse
+from fastapi_jwt_auth.exceptions import AuthJWTException
 from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -28,7 +29,12 @@ app = FastAPI(
     root_path=global_settings.normalized_root_path,
 )
 
-# TODO add routers
+
+@app.exception_handler(AuthJWTException)
+def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+
+
 app.include_router(auth.router)
 app.include_router(autocomplete.router)
 app.include_router(chapter.router)
