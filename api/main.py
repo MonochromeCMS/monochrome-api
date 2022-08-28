@@ -4,7 +4,8 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, ORJSONResponse, RedirectResponse
 from fastapi_jwt_auth.exceptions import AuthJWTException
-from prometheus_fastapi_instrumentator import Instrumentator
+
+# from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
@@ -12,6 +13,7 @@ from .config import get_settings
 from .db import db
 from .limiter import limiter, rate_limit_exceeded_handler
 from .media import media
+from .openapi import custom_openapi
 from .routers import auth, autocomplete, chapter, comment, manga, settings, upload, user
 from .utils import logger
 
@@ -23,15 +25,14 @@ else:
     json_response = ORJSONResponse
 
 app = FastAPI(
-    title="Monochrome API",
-    version="2.0.1",
     default_response_class=json_response,
     root_path=global_settings.normalized_root_path,
 )
+app.openapi = custom_openapi(app)
 
 
 @app.exception_handler(AuthJWTException)
-def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+def authjwt_exception_handler(_: Request, exc: AuthJWTException):
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 
@@ -60,8 +61,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add Prometheus metrics
-Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(app, tags=["Status"])
+# Add Prometheus metrics TODO: Implement taking into account gunicorn
+# Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(app, tags=["Status"])
 
 
 @app.on_event("startup")
