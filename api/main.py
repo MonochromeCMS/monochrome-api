@@ -33,7 +33,7 @@ app.openapi = custom_openapi(app)
 
 @app.exception_handler(AuthJWTException)
 def authjwt_exception_handler(_: Request, exc: AuthJWTException):
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+    return json_response(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": exc.message})
 
 
 app.include_router(auth.router)
