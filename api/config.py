@@ -1,20 +1,12 @@
 from datetime import timedelta
-from enum import Enum
 from functools import lru_cache
 
 from pydantic import BaseSettings, Field
 
+from db_adapters import DatabaseBackends
+from media_adapters import MediaBackends
+
 from .utils import logger
-
-
-class MediaBackends(str, Enum):
-    deta = "DETA"
-    filesystem = "FS"
-
-
-class DatabaseBackends(str, Enum):
-    deta = "DETA"
-    postgres = "POSTGRES"
 
 
 class Settings(BaseSettings):
@@ -24,8 +16,7 @@ class Settings(BaseSettings):
     cors_origins: str = ""
     # JWT Settings
     jwt_secret_key: str
-    jwt_algorithm: str = "HS256"
-    jwt_access_token_expire_minutes: int = 60
+    jwt_samesite: str = "none"
 
     temp_path: str = "/tmp"
 
@@ -37,13 +28,14 @@ class Settings(BaseSettings):
     @property
     def authjwt(self):
         return {
-            "authjwt_token_location": {"headers", "cookies"},
             "authjwt_secret_key": self.jwt_secret_key,
+            "authjwt_cookie_samesite": self.jwt_samesite,
+            "authjwt_token_location": {"headers", "cookies"},
             "authjwt_algorithm": "HS256",
-            "authjwt_access_token_expires": timedelta(minutes=self.jwt_access_token_expire_minutes),
+            "authjwt_access_token_expires": timedelta(minutes=60),
             "authjwt_refresh_token_expires": timedelta(days=15),
-            "authjwt_cookie_csrf_protect": False,
-            # "authjwt_cookie_samesite": "lax",
+            # "authjwt_cookie_csrf_protect": False,
+            "authjwt_csrf_methods": {'GET', 'POST','PUT','PATCH','DELETE'}
         }.items()
 
     @property
