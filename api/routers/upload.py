@@ -41,6 +41,7 @@ async def _get_upload_session_blobs(session_id: UUID, db_session=Depends(db.db_s
     status_code=status.HTTP_201_CREATED,
     response_model=UploadSessionResponse,
     responses=responses.post_responses,
+    openapi_extra=responses.needs_auth,
 )
 async def begin_upload_session(
     payload: UploadSessionSchema,
@@ -78,7 +79,12 @@ async def begin_upload_session(
     return await UploadSession.find_detailed(db_session, session.id)
 
 
-@router.get("/{session_id}", response_model=UploadSessionResponse, responses=responses.get_responses)
+@router.get(
+    "/{session_id}",
+    response_model=UploadSessionResponse,
+    responses=responses.get_responses,
+    openapi_extra=responses.needs_auth,
+)
 async def get_upload_session(upload_session=Permission("view", _get_upload_session_blobs)):
     logger.debug(f"Upload session {upload_session.id} requested")
     return upload_session
@@ -89,6 +95,7 @@ async def get_upload_session(upload_session=Permission("view", _get_upload_sessi
     status_code=status.HTTP_201_CREATED,
     response_model=list[UploadedBlobResponse],
     responses=responses.post_blobs_responses,
+    openapi_extra=responses.needs_auth,
 )
 async def upload_pages_to_upload_session(
     payload: list[UploadFile] = File(...),
@@ -121,7 +128,7 @@ async def upload_pages_to_upload_session(
     return blobs
 
 
-@router.delete("/{session_id}", responses=responses.delete_responses)
+@router.delete("/{session_id}", responses=responses.delete_responses, openapi_extra=responses.needs_auth)
 async def delete_upload_session(
     tasks: BackgroundTasks, session=Permission("edit", _get_upload_session_blobs), db_session=Depends(db.db_session)
 ):
@@ -133,7 +140,12 @@ async def delete_upload_session(
     return "OK"
 
 
-@router.post("/{session_id}/commit", response_model=ChapterResponse, responses=responses.post_commit_responses)
+@router.post(
+    "/{session_id}/commit",
+    response_model=ChapterResponse,
+    responses=responses.post_commit_responses,
+    openapi_extra=responses.needs_auth,
+)
 async def commit_upload_session(
     payload: CommitUploadSession,
     tasks: BackgroundTasks,
@@ -172,7 +184,9 @@ async def commit_upload_session(
     return ORJSONResponse(status_code=(200 if edit else 201), content=content)
 
 
-@router.delete("/{session_id}/files", responses=responses.delete_all_blobs_responses)
+@router.delete(
+    "/{session_id}/files", responses=responses.delete_all_blobs_responses, openapi_extra=responses.needs_auth
+)
 async def delete_all_pages_from_upload_session(
     tasks: BackgroundTasks,
     session=Permission("edit", _get_upload_session_blobs),
@@ -187,7 +201,7 @@ async def delete_all_pages_from_upload_session(
     return "OK"
 
 
-@router.delete("/{session_id}/{file_id}", responses=responses.delete_blob_responses)
+@router.delete("/{session_id}/{file_id}", responses=responses.delete_blob_responses, openapi_extra=responses.needs_auth)
 async def delete_page_from_upload_session(
     file_id: UUID,
     tasks: BackgroundTasks,
@@ -209,6 +223,7 @@ async def delete_page_from_upload_session(
     status_code=status.HTTP_201_CREATED,
     response_model=List[UploadedBlobResponse],
     responses=responses.slice_blobs_responses,
+    openapi_extra=responses.needs_auth,
 )
 async def slice_pages_in_upload_session(
     payload: list[UUID],

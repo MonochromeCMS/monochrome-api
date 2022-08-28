@@ -122,7 +122,9 @@ async def login(
     return token_response(user.id, Authorize)
 
 
-@router.post("/refresh", response_model=TokenResponse, responses=responses.token_responses)
+@router.post(
+    "/refresh", response_model=TokenResponse, responses=responses.token_responses, openapi_extra=responses.needs_auth
+)
 @limiter.limit("1/minute")
 async def refresh_access_token(request: Request, Authorize: AuthJWT = Depends(), db_session=Depends(db.db_session)):
     # TODO: Frontend send refresh via headers, only get access token back
@@ -137,15 +139,17 @@ async def refresh_access_token(request: Request, Authorize: AuthJWT = Depends(),
     return token_response(user.id, Authorize, refresh=False)
 
 
-@router.delete("/logout")
+@router.delete("/logout", openapi_extra=responses.needs_auth)
 def logout(Authorize: AuthJWT = Depends()):
-    Authorize.jwt_required()
+    # Authorize.jwt_required()
 
     Authorize.unset_jwt_cookies()
     return {"msg": "Successful logout"}
 
 
-@router.delete("/logout_everywhere", responses=responses.logout_everywhere_responses)
+@router.delete(
+    "/logout_everywhere", responses=responses.logout_everywhere_responses, openapi_extra=responses.needs_auth
+)
 async def logout_everywhere(
     user: User = Depends(is_connected), db_session=Depends(db.db_session), Authorize: AuthJWT = Depends()
 ):

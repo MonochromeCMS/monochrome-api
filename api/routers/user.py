@@ -29,19 +29,25 @@ async def _get_user(user_id: UUID, db_session=Depends(db.db_session)):
     return await User.find(db_session, user_id, NotFoundHTTPException("User not found"))
 
 
-@router.get("/me", response_model=UserResponse, responses=responses.get_me_responses)
+@router.get(
+    "/me", response_model=UserResponse, responses=responses.get_me_responses, openapi_extra=responses.needs_auth
+)
 async def get_current_user(user: User = Depends(is_connected)):
     """Provides information about the user logged in."""
     return user
 
 
-@router.get("/{user_id}", response_model=UserResponse, responses=responses.get_responses)
+@router.get(
+    "/{user_id}", response_model=UserResponse, responses=responses.get_responses, openapi_extra=responses.needs_auth
+)
 async def get_user(user: User = Permission("view", _get_user)):
     """Provides information about a user."""
     return user
 
 
-@router.put("/{user_id}", response_model=UserResponse, responses=responses.put_responses)
+@router.put(
+    "/{user_id}", response_model=UserResponse, responses=responses.put_responses, openapi_extra=responses.needs_auth
+)
 async def update_user(
     payload: UserEditSchema,
     user: User = Permission("edit", _get_user),
@@ -72,7 +78,7 @@ async def update_user(
     return user
 
 
-@router.delete("/{user_id}", responses=responses.delete_responses)
+@router.delete("/{user_id}", responses=responses.delete_responses, openapi_extra=responses.needs_auth)
 async def delete_user(user: User = Permission("edit", _get_user), db_session=Depends(db.db_session)):
     """Delete an user, only allowed if you are that user, or if you are an Admin"""
     return await user.delete(db_session)
@@ -84,6 +90,7 @@ async def delete_user(user: User = Permission("edit", _get_user), db_session=Dep
     response_model=UserResponse,
     responses=responses.post_responses,
     dependencies=[Permission("create", User.__class_acl__)],
+    openapi_extra=responses.needs_auth,
 )
 async def create_user(payload: UserSchema, db_session=Depends(db.db_session)):
     """Create an user, only allowed for Admins"""
@@ -122,7 +129,7 @@ if global_settings.allow_registration:
         return user
 
 
-@router.get("", response_model=UsersResponse, responses=responses.get_all_responses)
+@router.get("", response_model=UsersResponse, responses=responses.get_all_responses, openapi_extra=responses.needs_auth)
 async def search_users(
     limit: Optional[int] = Query(10, ge=1, le=global_settings.max_page_limit),
     offset: Optional[int] = Query(0, ge=0),
@@ -153,7 +160,7 @@ def save_avatar(user_id: UUID, file: File):
         media.media.put(f"users/{user_id}.jpg", f)
 
 
-@router.put("/{user_id}/avatar", responses=responses.put_avatar_responses)
+@router.put("/{user_id}/avatar", responses=responses.put_avatar_responses, openapi_extra=responses.needs_auth)
 async def set_avatar(
     payload: UploadFile = File(...),
     user: User = Permission("edit", _get_user),

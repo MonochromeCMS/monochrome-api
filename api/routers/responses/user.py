@@ -1,6 +1,8 @@
 from ...exceptions import BadRequestHTTPException, NotFoundHTTPException
 from ...schemas.user import UserResponse, UsersResponse
-from .auth import auth_responses
+from .auth import auth_responses, needs_auth
+
+needs_auth = needs_auth
 
 get_me_responses = {
     **auth_responses,

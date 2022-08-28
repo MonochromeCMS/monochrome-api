@@ -20,7 +20,7 @@ async def get_site_settings(settings: Settings = Permission("view", _get_setting
     return SettingsSchema.from_orm(settings)
 
 
-@router.put("", responses=responses.put_responses)
+@router.put("", responses=responses.put_responses, openapi_extra=responses.needs_auth)
 async def edit_site_settings(
     new_settings: SettingsSchema,
     settings: Settings = Permission("edit", _get_settings),

@@ -1,5 +1,7 @@
 from ...schemas.settings import SettingsSchema
-from .auth import auth_responses
+from .auth import auth_responses, needs_auth
+
+needs_auth = needs_auth
 
 put_responses = {
     **auth_responses,

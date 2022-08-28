@@ -1,7 +1,9 @@
 from ...exceptions import BadRequestHTTPException, NotFoundHTTPException
 from ...schemas.chapter import ChapterResponse
 from ...schemas.upload import UploadedBlobResponse, UploadSessionResponse
-from .auth import auth_responses
+from .auth import auth_responses, needs_auth
+
+needs_auth = needs_auth
 
 post_responses = {
     **auth_responses,

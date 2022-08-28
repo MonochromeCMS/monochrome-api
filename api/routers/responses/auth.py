@@ -31,3 +31,5 @@ logout_everywhere_responses = {
         },
     },
 }
+
+needs_auth = {"security": [{"OAuth2PasswordBearer": []}]}

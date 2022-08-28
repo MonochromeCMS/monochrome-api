@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     cors_origins: str = ""
     # JWT Settings
     jwt_secret_key: str
-    jwt_samesite: str = "none"
+    jwt_cookie_samesite: str = "none"
 
     temp_path: str = "/tmp"
 
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     def authjwt(self):
         return {
             "authjwt_secret_key": self.jwt_secret_key,
-            "authjwt_cookie_samesite": self.jwt_samesite,
+            "authjwt_cookie_samesite": self.jwt_cookie_samesite,
             "authjwt_token_location": {"headers", "cookies"},
             "authjwt_algorithm": "HS256",
             "authjwt_access_token_expires": timedelta(minutes=60),

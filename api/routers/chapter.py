@@ -52,14 +52,19 @@ async def get_chapter(chapter: Chapter = Permission("view", _get_detailed_chapte
     return chapter
 
 
-@router.delete("/{chapter_id}", responses=responses.delete_responses)
+@router.delete("/{chapter_id}", responses=responses.delete_responses, openapi_extra=responses.needs_auth)
 async def delete_chapter(chapter: Chapter = Permission("edit", _get_chapter), db_session=Depends(db.db_session)):
     media.media.rmtree(f"{chapter.manga_id}/{chapter.id}")
     logger.debug(f"Chapter {chapter.id} deleted")
     return await chapter.delete(db_session)
 
 
-@router.put("/{chapter_id}", response_model=ChapterResponse, responses=responses.put_responses)
+@router.put(
+    "/{chapter_id}",
+    response_model=ChapterResponse,
+    responses=responses.put_responses,
+    openapi_extra=responses.needs_auth,
+)
 async def update_chapter(
     payload: ChapterSchema,
     chapter: Chapter = Permission("edit", _get_chapter),

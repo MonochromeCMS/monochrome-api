@@ -1,6 +1,8 @@
 from ...exceptions import BadRequestHTTPException, NotFoundHTTPException
 from ...schemas.comment import CommentResponse
-from .auth import auth_responses
+from .auth import auth_responses, needs_auth
+
+needs_auth = needs_auth
 
 post_responses = {
     **auth_responses,

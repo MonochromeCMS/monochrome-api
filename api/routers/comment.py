@@ -25,6 +25,7 @@ async def _get_comment(comment_id: UUID, db_session=Depends(db.db_session)):
     response_model=CommentResponse,
     responses=responses.post_responses,
     dependencies=[Permission("create", Comment.__class_acl__)],
+    openapi_extra=responses.needs_auth,
 )
 async def create_comment(
     payload: CommentSchema,
@@ -49,13 +50,18 @@ async def get_comment(comment: Comment = Permission("view", _get_comment)):
     return comment
 
 
-@router.delete("/{comment_id}", responses=responses.delete_responses)
+@router.delete("/{comment_id}", responses=responses.delete_responses, openapi_extra=responses.needs_auth)
 async def delete_comment(comment: Comment = Permission("edit", _get_comment), db_session=Depends(db.db_session)):
     logger.debug(f"Comment {comment.id} deleted")
     return await comment.delete(db_session)
 
 
-@router.put("/{comment_id}", response_model=CommentResponse, responses=responses.put_responses)
+@router.put(
+    "/{comment_id}",
+    response_model=CommentResponse,
+    responses=responses.put_responses,
+    openapi_extra=responses.needs_auth,
+)
 async def update_comment(
     payload: CommentEditSchema,
     comment: Comment = Permission("edit", _get_comment),

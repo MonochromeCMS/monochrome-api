@@ -1,7 +1,9 @@
 from ...exceptions import NotFoundHTTPException
 from ...schemas.chapter import ChapterResponse, DetailedChapterResponse
 from ...schemas.comment import ChapterCommentsResponse
-from .auth import auth_responses
+from .auth import auth_responses, needs_auth
+
+needs_auth = needs_auth
 
 get_responses = {
     200: {

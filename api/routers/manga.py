@@ -31,9 +31,10 @@ async def _get_manga(manga_id: UUID, db_session=Depends(db.db_session)):
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
-    # response_model=MangaResponse,
+    # response_model=MangaResponse, TODO: check why this was disabled
     responses=responses.post_responses,
     dependencies=[Permission("create", Manga.__class_acl__)],
+    openapi_extra=responses.needs_auth,
 )
 async def create_manga(
     payload: MangaSchema,
@@ -82,14 +83,16 @@ async def get_manga_chapters(
         raise permission_exception
 
 
-@router.delete("/{manga_id}", responses=responses.delete_responses)
+@router.delete("/{manga_id}", responses=responses.delete_responses, openapi_extra=responses.needs_auth)
 async def delete_manga(manga: Manga = Permission("edit", _get_manga), db_session=Depends(db.db_session)):
     media.media.rmtree(str(manga.id))
 
     return await manga.delete(db_session)
 
 
-@router.put("/{manga_id}", response_model=MangaResponse, responses=responses.put_responses)
+@router.put(
+    "/{manga_id}", response_model=MangaResponse, responses=responses.put_responses, openapi_extra=responses.needs_auth
+)
 async def update_manga(
     payload: MangaSchema,
     manga: Manga = Permission("edit", _get_manga),
@@ -108,7 +111,7 @@ def save_cover(manga_id: UUID, file: File):
         media.media.put(f"{manga_id}/cover.jpg", f)
 
 
-@router.put("/{manga_id}/cover", responses=responses.put_cover_responses)
+@router.put("/{manga_id}/cover", responses=responses.put_cover_responses, openapi_extra=responses.needs_auth)
 async def set_manga_cover(
     payload: UploadFile = File(...),
     manga: Manga = Permission("edit", _get_manga),
