@@ -94,8 +94,10 @@ async def delete_user(user: User = Permission("edit", _get_user), db_session=Dep
 )
 async def create_user(payload: UserSchema, db_session=Depends(db.db_session)):
     """Create an user, only allowed for Admins"""
-    if await User.from_username_email(db_session, payload.username, payload.email):
-        raise BadRequestHTTPException("That username or email is already in use")
+    if await User.from_username(db_session, payload.username):
+        raise BadRequestHTTPException("That username is already in use")
+    if await User.from_email(db_session, payload.email):
+        raise BadRequestHTTPException("That email is already in use")
 
     data = payload.dict(exclude={"password"})
     hashed_pwd = password_hash(payload.password)
