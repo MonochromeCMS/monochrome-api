@@ -135,10 +135,9 @@ CORS_ORIGINS = ""
 
 # Secret used to sign the JWT
 JWT_SECRET_KEY
-# Algorithm used to sign the JWT
-JWT_ALGORITHM = "HS256"
-# Amount of minutes a JWT will be valid for
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
+# Only change this if you know what you are doing (increases the cookie security but only works under certain conditions)
+JWT_COOKIE_SAMESITE = "none"
 
 # Path where temporary data will be stored
 TEMP_PATH = "/tmp"
