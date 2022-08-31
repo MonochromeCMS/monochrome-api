@@ -34,7 +34,8 @@ class Settings(BaseSettings):
             "authjwt_algorithm": "HS256",
             "authjwt_access_token_expires": timedelta(minutes=60),
             "authjwt_refresh_token_expires": timedelta(days=15),
-            # "authjwt_cookie_csrf_protect": False,
+            "authjwt_cookie_csrf_protect": False,
+            "authjwt_cookie_secure": True,
             "authjwt_csrf_methods": {"GET", "POST", "PUT", "PATCH", "DELETE"},
         }.items()
 

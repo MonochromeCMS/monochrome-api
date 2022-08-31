@@ -127,7 +127,6 @@ async def login(
 )
 @limiter.limit("1/minute")
 async def refresh_access_token(request: Request, Authorize: AuthJWT = Depends(), db_session=Depends(db.db_session)):
-    # TODO: Frontend send refresh via headers, only get access token back
     Authorize.jwt_refresh_token_required()
 
     subject = Authorize.get_jwt_subject()
