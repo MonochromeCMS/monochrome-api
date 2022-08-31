@@ -81,3 +81,12 @@ jobs:
             ghcr.io/${{ steps.get_release_metadata.outputs.image_name }}:${{ steps.get_release_metadata.outputs.app_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      
+      - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'monochrome-api'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_71d0a684e46d483a971e01bd6261dcd8 }}
+        images: 'ghcr.io/${{ steps.get_release_metadata.outputs.image_name }}:${{ steps.get_release_metadata.outputs.app_tag }}'
