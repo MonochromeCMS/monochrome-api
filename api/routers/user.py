@@ -121,8 +121,10 @@ if global_settings.allow_registration:
         """Register a new user, they will be given the User role."""
         hashed_pwd = password_hash(payload.password)
 
-        if await User.from_username_email(db_session, payload.username, payload.email):
-            raise BadRequestHTTPException("That username or email is already in use")
+        if await User.from_username(db_session, payload.username):
+            raise BadRequestHTTPException("That username is already in use")
+        if await User.from_email(db_session, payload.email):
+            raise BadRequestHTTPException("That email is already in use")
 
         data = payload.dict(exclude={"password"})
         user = User(**data, role=Role.user, hashed_password=hashed_pwd)

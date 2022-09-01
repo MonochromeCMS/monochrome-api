@@ -40,3 +40,8 @@ services:
 
 volumes:
   db-data:
+
+networks:
+  default:
+    driver_opts:
+      isolate: "true"
