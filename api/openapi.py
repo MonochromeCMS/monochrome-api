@@ -23,7 +23,7 @@ def custom_openapi(app: FastAPI):
         }
 
         openapi_schema["components"]["securitySchemes"] = security_schemes
-        
+
         for name, value in openapi_schema["components"]["schemas"].items():
             if "_" in name:
                 value["title"] = value["title"].replace("_", " ")
