@@ -4,10 +4,9 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, ORJSONResponse, RedirectResponse
 from fastapi_jwt_auth.exceptions import AuthJWTException
-
-# from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from .config import get_settings
 from .db import db
@@ -61,8 +60,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add Prometheus metrics TODO: Implement taking into account gunicorn
-# Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(app, tags=["Status"])
+# Add Prometheus metrics
+app.add_middleware(
+    PrometheusMiddleware,
+    app_name="Monochrome",
+    prefix="monochrome",
+    group_paths=True,
+    filter_unhandled_paths=True,
+    skip_paths=["/ping", "/metrics"],
+    always_use_int_status=True
+)
+app.add_route("/metrics", handle_metrics)
 
 
 @app.on_event("startup")

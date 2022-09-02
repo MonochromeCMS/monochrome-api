@@ -16,7 +16,7 @@ orjson = "*"
 passlib = {extras = ["bcrypt"], version = "*"}
 patool = "*"
 pillow = ">=9.1.1"
-prometheus-fastapi-instrumentator = "*"
+starlette_exporter = "*"
 pydantic = {extras = ["email"], version = "*"}
 python-jose = {extras = ["cryptography"], version = "*"}
 python-multipart = "*"
