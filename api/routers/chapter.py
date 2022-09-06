@@ -11,12 +11,14 @@ from ..media import media
 from ..schemas.chapter import ChapterResponse, ChapterSchema, DetailedChapterResponse, LatestChaptersResponse
 from ..schemas.comment import ChapterCommentsResponse
 from ..utils import logger
-from .auth import Permission, get_active_principals
+from .auth import Permission, get_active_principals, get_connected_user
 from .responses import chapter as responses
 
 global_settings = get_settings()
 Chapter = models.chapter.Chapter
 Comment = models.comment.Comment
+User = models.user.User
+ProgressTracking = models.progress.ProgressTracking
 
 router = APIRouter(prefix="/chapter", tags=["Chapter"])
 
@@ -29,14 +31,23 @@ async def _get_detailed_chapter(chapter_id: UUID, db_session=Depends(db.db_sessi
     return await Chapter.find_detailed(db_session, chapter_id, NotFoundHTTPException("Chapter not found"))
 
 
-@router.get("", response_model=LatestChaptersResponse, dependencies=[Permission("view", Chapter.__class_acl__)])
+@router.get(
+    "",
+    response_model=LatestChaptersResponse,
+    dependencies=[Permission("view", Chapter.__class_acl__)],
+    openapi_extra=responses.needs_auth,
+)
 async def get_latest_chapters(
     limit: Optional[int] = Query(10, ge=1, le=global_settings.max_page_limit),
     offset: Optional[int] = Query(0, ge=0),
     db_session=Depends(db.db_session),
+    user: User = Depends(get_connected_user),
 ):
     count, page = await Chapter.latest(db_session, limit, offset)
     logger.debug(f"Latest chapter page of length {limit} requested")
+
+    if user:
+        page = [await ProgressTracking.from_chapter(db_session, chapter, user.id) for chapter in page]
 
     return {
         "offset": offset,

@@ -13,12 +13,13 @@ from ..media import media
 from ..schemas.chapter import ChapterResponse
 from ..schemas.manga import MangaResponse, MangaSchema, MangaSearchResponse
 from ..utils import logger
-from .auth import Permission, get_active_principals, is_connected
+from .auth import Permission, get_active_principals, get_connected_user, is_connected
 from .responses import manga as responses
 
 global_settings = get_settings()
 Chapter = models.chapter.Chapter
 Manga = models.manga.Manga
+ProgressTracking = models.progress.ProgressTracking
 User = models.user.User
 
 router = APIRouter(prefix="/manga", tags=["Manga"])
@@ -71,14 +72,23 @@ async def get_manga(manga: Manga = Permission("view", _get_manga)):
     return manga
 
 
-@router.get("/{manga_id}/chapters", response_model=List[ChapterResponse], responses=responses.get_chapters_responses)
+@router.get(
+    "/{manga_id}/chapters",
+    response_model=List[ChapterResponse],
+    responses=responses.get_chapters_responses,
+    openapi_extra=responses.needs_auth,
+)
 async def get_manga_chapters(
     manga: Manga = Permission("view", _get_manga),
     user_principals=Depends(get_active_principals),
+    user: User = Depends(get_connected_user),
     db_session=Depends(db.db_session),
 ):
     if await has_permission(user_principals, "view", Chapter.__class_acl__()):
-        return await Chapter.from_manga(db_session, manga.id)
+        chapters = await Chapter.from_manga(db_session, manga.id)
+        if user:
+            chapters = [await ProgressTracking.from_chapter(db_session, chapter, user.id) for chapter in chapters]
+        return chapters
     else:
         raise permission_exception
 

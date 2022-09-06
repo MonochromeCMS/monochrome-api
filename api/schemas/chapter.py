@@ -47,6 +47,7 @@ class ChapterResponse(ChapterSchema):
         description="Time this chapter was uploaded",
     )
     owner_id: Optional[UUID] = Field(description="User that uploaded this chapter")
+    tracking: Optional[ProgressTrackingSchema] = Field(description="The user's tracking history for the chapter")
 
     class Config:
         orm_mode = True
