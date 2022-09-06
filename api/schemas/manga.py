@@ -37,6 +37,13 @@ class MangaSchema(CamelModel):
         }
 
 
+class ShortMangaResponse(CamelModel):
+    title: str = Field(description="Title of the manga")
+    version: int = Field(
+        description="Version of the manga",
+    )
+
+
 class MangaResponse(MangaSchema):
     id: UUID = Field(
         title="ID",

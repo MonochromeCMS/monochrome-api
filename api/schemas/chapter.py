@@ -3,7 +3,8 @@ from typing import List, Optional
 from uuid import UUID
 
 from .base import CamelModel, Field, PaginationResponse
-from .manga import MangaResponse
+from .manga import ShortMangaResponse
+from .progress import ProgressTrackingSchema
 
 
 class ChapterSchema(CamelModel):
@@ -67,7 +68,7 @@ class ChapterResponse(ChapterSchema):
 
 
 class DetailedChapterResponse(ChapterResponse):
-    manga: MangaResponse
+    manga: ShortMangaResponse
 
 
 class LatestChaptersResponse(PaginationResponse):
