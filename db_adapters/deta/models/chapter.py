@@ -50,13 +50,18 @@ class Chapter(Base):
 
     async def delete(self, db_session: Deta):
         from .comment import Comment
+        from .progress import ProgressTracking
         from .upload import UploadSession
 
         chapters = await Comment._fetch(db_session, {"chapter_id": str(self.id)})
+        tracking = await ProgressTracking._fetch(db_session, {"chapter_id": str(self.id)})
         sessions = await UploadSession._fetch(db_session, {"chapter_id": str(self.id)})
 
         for c in chapters:
             await c.delete(db_session)
+
+        for p in tracking:
+            await p.delete(db_session)
 
         for s in sessions:
             await s.delete(db_session)

@@ -22,9 +22,10 @@ class Chapter(Base):
     manga_id = Column(UUID(as_uuid=True), ForeignKey("manga.id", ondelete="CASCADE"), nullable=False)
     manga = relationship("Manga", back_populates="chapters")
 
-    # Related sessions and comments are deleted with the chapter
+    # Related sessions, tracking and comments are deleted with the chapter
     sessions = relationship("UploadSession", back_populates="chapter", cascade="all, delete", passive_deletes=True)
     comments = relationship("Comment", back_populates="chapter", cascade="all, delete", passive_deletes=True)
+    trackings = relationship("ProgressTracking", cascade="all, delete", passive_deletes=True)
 
     @property
     def __acl__(self):

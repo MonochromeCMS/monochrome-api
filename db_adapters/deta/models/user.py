@@ -55,11 +55,16 @@ class User(Base):
 
     async def delete(self, db_session: Deta):
         from .comment import Comment
+        from .progress import ProgressTracking
 
         comments = await Comment._fetch(db_session, {"author_id": str(self.id)})
+        tracking = await ProgressTracking._fetch(db_session, {"author_id": str(self.id)})
 
         for c in comments:
             await c.delete(db_session)
+
+        for p in tracking:
+            await p.delete(db_session)
         await super().delete(db_session)
 
     @classmethod

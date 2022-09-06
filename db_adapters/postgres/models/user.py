@@ -25,8 +25,9 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     update_time = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    # Delete all the related comments with the user.
+    # Delete all the related comments and tracking with the user.
     comments = relationship("Comment", back_populates="author", cascade="all, delete", passive_deletes=True)
+    trackings = relationship("ProgressTracking", cascade="all, delete", passive_deletes=True)
 
     @property
     def principals(self):
