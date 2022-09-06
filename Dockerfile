@@ -35,7 +35,9 @@ ENTRYPOINT ["/tini", "--", "/entrypoint.sh"]
 # COPY APP SOURCE CODE
 COPY ./docker/* ./
 COPY ./fastapi-permissions/fastapi_permissions ./fastapi_permissions
-COPY ./db_adapters ./media_adapters ./api ./
+COPY ./db_adapters ./db_adapters
+COPY ./media_adapters ./media_adapters
+COPY ./api ./api
 
 ENV PROMETHEUS_MULTIPROC_DIR=/prometheus
 RUN mkdir /prometheus
