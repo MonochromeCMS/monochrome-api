@@ -6,7 +6,7 @@ from ..db import db, models
 from ..exceptions import BadRequestHTTPException, NotFoundHTTPException
 from ..schemas.comment import CommentEditSchema, CommentResponse, CommentSchema
 from ..utils import logger
-from .auth import Permission, get_connected_user
+from .auth import Permission, is_connected
 from .responses import comment as responses
 
 Comment = models.comment.Comment
@@ -29,7 +29,7 @@ async def _get_comment(comment_id: UUID, db_session=Depends(db.db_session)):
 )
 async def create_comment(
     payload: CommentSchema,
-    user: User = Depends(get_connected_user),
+    user: User = Depends(is_connected),
     db_session=Depends(db.db_session),
 ):
     if payload.reply_to:
