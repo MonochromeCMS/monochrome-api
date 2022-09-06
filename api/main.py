@@ -13,7 +13,7 @@ from .db import db
 from .limiter import limiter, rate_limit_exceeded_handler
 from .media import media
 from .openapi import custom_openapi
-from .routers import auth, autocomplete, chapter, comment, manga, settings, upload, user
+from .routers import auth, autocomplete, chapter, comment, manga, progress, settings, upload, user
 from .utils import logger
 
 global_settings = get_settings()
@@ -40,6 +40,7 @@ app.include_router(autocomplete.router)
 app.include_router(chapter.router)
 app.include_router(comment.router)
 app.include_router(manga.router)
+app.include_router(progress.router)
 app.include_router(settings.router)
 app.include_router(upload.router)
 app.include_router(user.router)
@@ -68,7 +69,7 @@ app.add_middleware(
     group_paths=True,
     filter_unhandled_paths=True,
     skip_paths=["/ping", "/metrics"],
-    always_use_int_status=True
+    always_use_int_status=True,
 )
 app.add_route("/metrics", handle_metrics)
 
