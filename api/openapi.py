@@ -9,7 +9,7 @@ def custom_openapi(app: FastAPI):
 
         openapi_schema = get_openapi(
             title="Monochrome API",
-            version="2.1.0",
+            version="2.2.0",
             description="Monochrome is an open source manga CMS",
             routes=app.routes,
         )
