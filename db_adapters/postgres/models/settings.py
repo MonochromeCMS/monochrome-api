@@ -28,6 +28,7 @@ class Settings(BasicBase):
             setattr(instance, k, v)
 
         db_session.add(instance)
+        await db_session.commit()
 
         return instance
 
