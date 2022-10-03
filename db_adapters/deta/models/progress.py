@@ -55,5 +55,5 @@ class ProgressTracking(Base):
 
         return {
             **chapter,
-            "tracking": instance,
+            "tracking": [instance] if instance else [],
         }

@@ -89,4 +89,4 @@ class Base:
         count_result = await db_session.execute(count_stmt)
         page_stmt = stmt.order_by(*order_by).offset(offset).limit(limit)
         page_result = await db_session.execute(page_stmt)
-        return count_result.scalars().first(), page_result.scalars().all()
+        return count_result.scalars().first(), page_result.unique().scalars().all()

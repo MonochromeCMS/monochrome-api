@@ -85,9 +85,7 @@ async def get_manga_chapters(
     db_session=Depends(db.db_session),
 ):
     if await has_permission(user_principals, "view", Chapter.__class_acl__()):
-        chapters = await Chapter.from_manga(db_session, manga.id)
-        if user:
-            chapters = [await ProgressTracking.from_chapter(db_session, chapter, user.id) for chapter in chapters]
+        chapters = await Chapter.from_manga(db_session, manga.id, user.id if user else None)
         return chapters
     else:
         raise permission_exception

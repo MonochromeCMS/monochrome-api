@@ -6,7 +6,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import Base
-from .chapter import Chapter
 
 
 class ProgressTracking(Base):
@@ -46,7 +45,7 @@ class ProgressTracking(Base):
         return instance
 
     @classmethod
-    async def from_chapter(cls, db_session: AsyncSession, chapter: Chapter, author_id: uuid.UUID):
+    async def from_chapter(cls, db_session: AsyncSession, chapter, author_id: uuid.UUID):
         """
         Returns the tracking progress for the current user on that chapter.
         """

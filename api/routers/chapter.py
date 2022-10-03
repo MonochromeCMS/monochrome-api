@@ -43,11 +43,8 @@ async def get_latest_chapters(
     db_session=Depends(db.db_session),
     user: User = Depends(get_connected_user),
 ):
-    count, page = await Chapter.latest(db_session, limit, offset)
-    logger.debug(f"Latest chapter page of length {limit} requested")
-
-    if user:
-        page = [await ProgressTracking.from_chapter(db_session, chapter, user.id) for chapter in page]
+    count, page = await Chapter.latest(db_session, limit, offset, user.id if user else None)
+    logger.debug(f"Latest chapter page {page} of length {limit} requested")
 
     return {
         "offset": offset,

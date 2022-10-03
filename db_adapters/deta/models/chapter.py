@@ -8,6 +8,7 @@ from pydantic import Field
 
 from .base import Base, NotFoundException
 from .manga import Manga
+from .progress import ProgressTracking
 
 
 class ScanGroup(Base):
@@ -78,7 +79,7 @@ class Chapter(Base):
         return cls(**chapter.dict(exclude={"manga"}), manga=manga)
 
     @classmethod
-    async def latest(cls, db_session: Deta, limit: int = 20, offset: int = 0):
+    async def latest(cls, db_session: Deta, limit: int = 20, offset: int = 0, user_id: Optional[UUID] = None):
         count, page = await cls._pagination(db_session, {}, limit, offset, lambda x: x.upload_time, True)
 
         page = [chapter.dict() for chapter in page]
@@ -88,14 +89,22 @@ class Chapter(Base):
             if chapter["manga_id"] not in cache:
                 cache[chapter["manga_id"]] = await Manga.find(db_session, chapter["manga_id"])
             chapter["manga"] = cache[chapter["manga_id"]]
+        
+        if user_id:
+            page = [await ProgressTracking.from_chapter(db_session, result, user_id) for result in page]
 
         return count, page
 
     @classmethod
-    async def from_manga(cls, db_session: Deta, manga_id: UUID):
+    async def from_manga(cls, db_session: Deta, manga_id: UUID, user_id: Optional[UUID] = None):
         query = {"manga_id": str(manga_id)}
         results = await cls._fetch(db_session, query)
-        return sorted(results, key=lambda x: x.number, reverse=True)
+        results = sorted(results, key=lambda x: x.number, reverse=True)
+    
+        if user_id:
+            results = [await ProgressTracking.from_chapter(db_session, result, user_id) for result in results]
+            
+        return results
 
     @classmethod
     async def get_groups(cls, db_session: Deta):
