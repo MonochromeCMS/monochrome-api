@@ -89,7 +89,7 @@ class Chapter(Base):
             if chapter["manga_id"] not in cache:
                 cache[chapter["manga_id"]] = await Manga.find(db_session, chapter["manga_id"])
             chapter["manga"] = cache[chapter["manga_id"]]
-        
+
         if user_id:
             page = [await ProgressTracking.from_chapter(db_session, result, user_id) for result in page]
 
@@ -100,10 +100,10 @@ class Chapter(Base):
         query = {"manga_id": str(manga_id)}
         results = await cls._fetch(db_session, query)
         results = sorted(results, key=lambda x: x.number, reverse=True)
-    
+
         if user_id:
             results = [await ProgressTracking.from_chapter(db_session, result, user_id) for result in results]
-            
+
         return results
 
     @classmethod

@@ -1,14 +1,14 @@
 import uuid
 
 from fastapi_permissions import Allow, Everyone
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, func, select, or_
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, func, or_, select
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, relationship
 
 from .base import Base, NotFoundException
-from .progress import ProgressTracking
 from .manga import Manga
+from .progress import ProgressTracking
 
 
 class Chapter(Base):
@@ -65,10 +65,14 @@ class Chapter(Base):
         Returns a page of the latest chapters uploaded, they also include the details of their related manga.
         """
         stmt = select(cls).outerjoin(cls.manga).options(joinedload(cls.manga))
-        
+
         if user_id:
-            stmt = stmt.outerjoin(cls.tracking).options(joinedload(cls.tracking)).where(or_(cls.tracking == None, ProgressTracking.author_id == user_id))
-        
+            stmt = (
+                stmt.outerjoin(cls.tracking)
+                .options(joinedload(cls.tracking))
+                .where(or_(cls.tracking == None, ProgressTracking.author_id == user_id))
+            )
+
         return await cls._pagination(db_session, stmt, limit, offset, (cls.upload_time.desc(),))
 
     @classmethod
@@ -77,10 +81,12 @@ class Chapter(Base):
         Returns all the chapters ordered by number that are related to the provided manga.
         """
         stmt = select(cls).where(cls.manga_id == manga_id).order_by(cls.number.desc())
-        
+
         if user_id:
-            stmt = stmt.options(joinedload(cls.tracking)).where(or_(cls.tracking == None, ProgressTracking.author_id == user_id))
-        
+            stmt = stmt.options(joinedload(cls.tracking)).where(
+                or_(cls.tracking == None, ProgressTracking.author_id == user_id)
+            )
+
         result = await db_session.execute(stmt)
         return result.unique().scalars().all()
 
