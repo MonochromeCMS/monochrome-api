@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, relationship
 
 from .base import Base, NotFoundException
-from .manga import Manga
 from .progress import ProgressTracking
 
 
