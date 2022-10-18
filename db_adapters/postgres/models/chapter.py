@@ -22,12 +22,12 @@ class Chapter(Base):
 
     owner_id = Column(UUID(as_uuid=True), ForeignKey("user.id", name="fk_chapter_owner", ondelete="SET NULL"))
     manga_id = Column(UUID(as_uuid=True), ForeignKey("manga.id", ondelete="CASCADE"), nullable=False)
-    manga = relationship("Manga", back_populates="chapters")
+    manga = relationship("Manga", back_populates="chapters", lazy="noload")
 
     # Related sessions, tracking and comments are deleted with the chapter
     sessions = relationship("UploadSession", back_populates="chapter", cascade="all, delete", passive_deletes=True)
     comments = relationship("Comment", back_populates="chapter", cascade="all, delete", passive_deletes=True)
-    tracking = relationship("ProgressTracking", cascade="all, delete", passive_deletes=True)
+    tracking = relationship("ProgressTracking", cascade="all, delete", passive_deletes=True, lazy="noload")
 
     @property
     def __acl__(self):
@@ -69,7 +69,6 @@ class Chapter(Base):
         if user_id:
             stmt = stmt.outerjoin(cls.tracking).options(joinedload(cls.tracking)).where(or_(cls.tracking == None, ProgressTracking.author_id == user_id))
         
-        print(str(stmt))
         return await cls._pagination(db_session, stmt, limit, offset, (cls.upload_time.desc(),))
 
     @classmethod
